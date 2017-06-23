@@ -331,21 +331,23 @@ public class MaterialAutoCompleteTextView extends AppCompatAutoCompleteTextView 
     init(context, attrs);
   }
 
-  private void init(Context context, AttributeSet attrs) {
-    iconSize = getPixel(32);
-    iconOuterWidth = getPixel(48);
-    iconOuterHeight = getPixel(32);
+    private void init(Context context, AttributeSet attrs) {
+        if (isInEditMode()) return;
 
-    bottomSpacing = getResources().getDimensionPixelSize(R.dimen.inner_components_spacing);
-    bottomEllipsisSize = getResources().getDimensionPixelSize(R.dimen.bottom_ellipsis_height);
+        iconSize = getPixel(32);
+        iconOuterWidth = getPixel(48);
+        iconOuterHeight = getPixel(32);
+
+        bottomSpacing = getResources().getDimensionPixelSize(com.rengwuxian.materialedittext.R.dimen.inner_components_spacing);
+        bottomEllipsisSize = getResources().getDimensionPixelSize(com.rengwuxian.materialedittext.R.dimen.bottom_ellipsis_height);
 
     // default baseColor is black
     int defaultBaseColor = Color.BLACK;
 
-    TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.MaterialEditText);
-    textColorStateList = typedArray.getColorStateList(R.styleable.MaterialEditText_met_textColor);
-    textColorHintStateList = typedArray.getColorStateList(R.styleable.MaterialEditText_met_textColorHint);
-    baseColor = typedArray.getColor(R.styleable.MaterialEditText_met_baseColor, defaultBaseColor);
+        TypedArray typedArray = context.obtainStyledAttributes(attrs, com.rengwuxian.materialedittext.R.styleable.MaterialEditText);
+        textColorStateList = typedArray.getColorStateList(com.rengwuxian.materialedittext.R.styleable.MaterialEditText_met_textColor);
+        textColorHintStateList = typedArray.getColorStateList(com.rengwuxian.materialedittext.R.styleable.MaterialEditText_met_textColorHint);
+        baseColor = typedArray.getColor(com.rengwuxian.materialedittext.R.styleable.MaterialEditText_met_baseColor, defaultBaseColor);
 
     // retrieve the default primaryColor
     int defaultPrimaryColor;
@@ -1269,11 +1271,12 @@ public class MaterialAutoCompleteTextView extends AppCompatAutoCompleteTextView 
     return bottomLinesAnimator;
   }
 
-  @Override
-  protected void onDraw(@NonNull Canvas canvas) {
-    int startX = getScrollX() + (iconLeftBitmaps == null ? 0 : (iconOuterWidth + iconPadding));
-    int endX = getScrollX() + (iconRightBitmaps == null ? getWidth() : getWidth() - iconOuterWidth - iconPadding);
-    int lineStartY = getScrollY() + getHeight() - getPaddingBottom();
+    @Override
+    @SuppressWarnings("ResourceAsColor")
+    protected void onDraw(@NonNull Canvas canvas) {
+        int startX = getScrollX() + (iconLeftBitmaps == null ? 0 : (iconOuterWidth + iconPadding));
+        int endX = getScrollX() + (iconRightBitmaps == null ? getWidth() : getWidth() - iconOuterWidth - iconPadding);
+        int lineStartY = getScrollY() + getHeight() - getPaddingBottom();
 
     // draw the icon(s)
     paint.setAlpha(255);
@@ -1290,20 +1293,20 @@ public class MaterialAutoCompleteTextView extends AppCompatAutoCompleteTextView 
       canvas.drawBitmap(icon, iconRight, iconTop, paint);
     }
 
-    // draw the clear button
-    if (hasFocus() && showClearButton && !TextUtils.isEmpty(getText()) && isEnabled()) {
-      paint.setAlpha(255);
-      int buttonLeft;
-      if (isRTL()) {
-        buttonLeft = startX;
-      } else {
-        buttonLeft = endX - iconOuterWidth;
-      }
-      Bitmap clearButtonBitmap = clearButtonBitmaps[0];
-      buttonLeft += (iconOuterWidth - clearButtonBitmap.getWidth()) / 2;
-      int iconTop = lineStartY + bottomSpacing - iconOuterHeight + (iconOuterHeight - clearButtonBitmap.getHeight()) / 2;
-      canvas.drawBitmap(clearButtonBitmap, buttonLeft, iconTop, paint);
-    }
+        // draw the clear button
+        if (hasFocus() && showClearButton && !TextUtils.isEmpty(getText())) {
+            paint.setAlpha(255);
+            int buttonLeft;
+            if (isRTL()) {
+                buttonLeft = startX;
+            } else {
+                buttonLeft = endX - iconOuterWidth;
+            }
+            Bitmap clearButtonBitmap = clearButtonBitmaps[0];
+            buttonLeft += (iconOuterWidth - clearButtonBitmap.getWidth()) / 2;
+            int iconTop = lineStartY + bottomSpacing - iconOuterHeight + (iconOuterHeight - clearButtonBitmap.getHeight()) / 2;
+            canvas.drawBitmap(clearButtonBitmap, buttonLeft, iconTop, paint);
+        }
 
     // draw the underline
     if (!hideUnderline) {
@@ -1353,11 +1356,11 @@ public class MaterialAutoCompleteTextView extends AppCompatAutoCompleteTextView 
       }
     }
 
-    // draw the floating label
-    if (floatingLabelEnabled && !TextUtils.isEmpty(floatingLabelText)) {
-      textPaint.setTextSize(floatingLabelTextSize);
-      // calculate the text color
-      textPaint.setColor((Integer) focusEvaluator.evaluate(focusFraction * (isEnabled() ? 1 : 0), floatingLabelTextColor != -1 ? floatingLabelTextColor : (baseColor & 0x00ffffff | 0x44000000), primaryColor));
+        // draw the floating label
+        if (floatingLabelEnabled && !TextUtils.isEmpty(floatingLabelText)) {
+            textPaint.setTextSize(floatingLabelTextSize);
+            // calculate the text color
+            textPaint.setColor((Integer) focusEvaluator.evaluate(focusFraction, floatingLabelTextColor != -1 ? floatingLabelTextColor : (baseColor & 0x00ffffff | 0x44000000), primaryColor));
 
       // calculate the horizontal position
       float floatingLabelWidth = textPaint.measureText(floatingLabelText.toString());
@@ -1374,9 +1377,9 @@ public class MaterialAutoCompleteTextView extends AppCompatAutoCompleteTextView 
       int distance = floatingLabelPadding;
       int floatingLabelStartY = (int) (innerPaddingTop + floatingLabelTextSize + floatingLabelPadding - distance * (floatingLabelAlwaysShown ? 1 : floatingLabelFraction) + getScrollY());
 
-      // calculate the alpha
-      int alpha = ((int) ((floatingLabelAlwaysShown ? 1 : floatingLabelFraction) * 0xff * (0.74f * focusFraction * (isEnabled() ? 1 : 0) + 0.26f) * (floatingLabelTextColor != -1 ? 1 : Color.alpha(floatingLabelTextColor) / 256f)));
-      textPaint.setAlpha(alpha);
+            // calculate the alpha
+            int alpha = ((int) ((floatingLabelAlwaysShown ? 1 : floatingLabelFraction) * 0xff * (0.74f * focusFraction + 0.26f) * (floatingLabelTextColor != -1 ? 1 : Color.alpha(floatingLabelTextColor) / 256f)));
+            textPaint.setAlpha(alpha);
 
       // draw the floating label
       canvas.drawText(floatingLabelText.toString(), floatingLabelStartX, floatingLabelStartY, textPaint);
@@ -1457,64 +1460,64 @@ public class MaterialAutoCompleteTextView extends AppCompatAutoCompleteTextView 
     return text;
   }
 
-  @Override
-  public boolean onTouchEvent(MotionEvent event) {
-    if (singleLineEllipsis && getScrollX() > 0 && event.getAction() == MotionEvent.ACTION_DOWN && event.getX() < getPixel(4 * 5) && event.getY() > getHeight() - extraPaddingBottom - innerPaddingBottom && event.getY() < getHeight() - innerPaddingBottom) {
-      setSelection(0);
-      return false;
-    }
-    if (hasFocus() && showClearButton && isEnabled()) {
-      switch (event.getAction()) {
-        case MotionEvent.ACTION_DOWN:
-          if (insideClearButton(event)) {
-            clearButtonTouched = true;
-            clearButtonClicking = true;
-            return true;
-          }
-        case MotionEvent.ACTION_MOVE:
-          if (clearButtonClicking && !insideClearButton(event)) {
-            clearButtonClicking = false;
-          }
-          if (clearButtonTouched) {
-            return true;
-          }
-          break;
-        case MotionEvent.ACTION_UP:
-          if (clearButtonClicking) {
-            if (!TextUtils.isEmpty(getText())) {
-              setText(null);
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (singleLineEllipsis && getScrollX() > 0 && event.getAction() == MotionEvent.ACTION_DOWN && event.getX() < getPixel(4 * 5) && event.getY() > getHeight() - extraPaddingBottom - innerPaddingBottom && event.getY() < getHeight() - innerPaddingBottom) {
+            setSelection(0);
+            return false;
+        }
+        if (hasFocus() && showClearButton) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    if (insideClearButton(event)) {
+                        clearButtonTouched = true;
+                        clearButtonClicking = true;
+                        return true;
+                    }
+                case MotionEvent.ACTION_MOVE:
+                    if (clearButtonClicking && !insideClearButton(event)) {
+                        clearButtonClicking = false;
+                    }
+                    if (clearButtonTouched) {
+                        return true;
+                    }
+                    break;
+                case MotionEvent.ACTION_UP:
+                    if (clearButtonClicking) {
+                        if (!TextUtils.isEmpty(getText())) {
+                            setText(null);
+                        }
+                        clearButtonClicking = false;
+                    }
+                    if (clearButtonTouched) {
+                        clearButtonTouched = false;
+                        return true;
+                    }
+                    clearButtonTouched = false;
+                    break;
+                case MotionEvent.ACTION_CANCEL:
+                    clearButtonTouched = false;
+                    clearButtonClicking = false;
+                    break;
             }
-            clearButtonClicking = false;
-          }
-          if (clearButtonTouched) {
-            clearButtonTouched = false;
-            return true;
-          }
-          clearButtonTouched = false;
-          break;
-        case MotionEvent.ACTION_CANCEL:
-          clearButtonTouched = false;
-          clearButtonClicking = false;
-          break;
-      }
+        }
+        return super.onTouchEvent(event);
     }
-    return super.onTouchEvent(event);
-  }
 
-  private boolean insideClearButton(MotionEvent event) {
-    float x = event.getX();
-    float y = event.getY();
-    int startX = getScrollX() + (iconLeftBitmaps == null ? 0 : (iconOuterWidth + iconPadding));
-    int endX = getScrollX() + (iconRightBitmaps == null ? getWidth() : getWidth() - iconOuterWidth - iconPadding);
-    int buttonLeft;
-    if (isRTL()) {
-      buttonLeft = startX;
-    } else {
-      buttonLeft = endX - iconOuterWidth;
+    private boolean insideClearButton(MotionEvent event) {
+        float x = event.getX();
+        float y = event.getY();
+        int startX = (iconLeftBitmaps == null ? 0 : (iconOuterWidth + iconPadding));
+        int endX = (iconRightBitmaps == null ? getWidth() : getWidth() - iconOuterWidth - iconPadding);
+        int buttonLeft;
+        if (isRTL()) {
+            buttonLeft = startX;
+        } else {
+            buttonLeft = endX - iconOuterWidth;
+        }
+        int buttonTop = getScrollY() + getHeight() - getPaddingBottom() + bottomSpacing - iconOuterHeight;
+        return (x >= buttonLeft && x < buttonLeft + iconOuterWidth && y >= buttonTop && y < buttonTop + iconOuterHeight);
     }
-    int buttonTop = getScrollY() + getHeight() - getPaddingBottom() + bottomSpacing - iconOuterHeight;
-    return (x >= buttonLeft && x < buttonLeft + iconOuterWidth && y >= buttonTop && y < buttonTop + iconOuterHeight);
-  }
 
   private int checkLength(CharSequence text) {
     if (lengthChecker==null) return text.length();
